@@ -12,7 +12,7 @@
     </style>
 </head>
 <body style="background-color: hsl(42, 100%, 92.2%)">
-    <?php include './header.php'; ?>
+    <?php include 'resources/header.php'; ?>
     <div style="height: 60px;"></div>
     <div class="content">
 
@@ -81,7 +81,7 @@
 
 </div>
 
-<?php include './footer.php'; ?>
+<?php include 'resources/footer.php'; ?>
 
 </body>
 </html>

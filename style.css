@@ -1,5 +1,5 @@
 body {
-	background-color: #d7d7ff;
+	background-color: hsl(42, 100%, 92.2%);
 	display: flex;
     flex-direction: column;
     padding: 0px;
