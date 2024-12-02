@@ -1,0 +1,101 @@
+<pre>
+<code>
+
+
+use std::fs;
+use std::io::{self, Write};
+use std::path::Path;
+use rusqlite::{Connection, Result};
+
+const BASE_DIR: &str = "/srv/http";
+const DB_PATH: &str = "/srv/http/database/db.db";
+
+fn create_category(name: &str) -> Result&lt;(), Box&lt;dyn std::error::Error>> {
+    // Create folder
+    let folder_path = Path::new(BASE_DIR).join(name);
+    fs::create_dir_all(&folder_path)?;
+    println!("Folder '{}' created successfully", name);
+
+    // Create index.php file
+    let index_content = format!("&lt;?php\ninclude '../resources/index_template.php';\n$post = '{}';\n?>", name);
+    let index_path = folder_path.join("index.php");
+    fs::write(&index_path, index_content)?;
+    println!("index.php created successfully in '{}'", name);
+
+    // Create table in SQLite database
+    let conn = Connection::open(DB_PATH)?;
+    conn.execute(
+        &format!(
+            "CREATE TABLE IF NOT EXISTS {} (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                header TEXT,
+                text TEXT,
+                date_splash TEXT,
+                date_order INTEGER,
+                file_name TEXT,
+                preview_html TEXT,
+                show TEXT,
+                tags TEXT
+            )", 
+            name
+        ),
+        [],
+    )?;
+    println!("Table '{}' created successfully in the database", name);
+    Ok(())
+}
+
+fn remove_category(name: &str, force: bool) -> Result&lt;(), Box&lt;dyn std::error::Error>> {
+    if !force {
+        print!("Are you sure you want to remove category '{}'? This action cannot be undone! (y/n): ", name);
+        io::stdout().flush()?;
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+        if input.trim().to_lowercase() != "y" {
+            println!("Operation cancelled.");
+            return Ok(());
+        }
+    }
+
+    // Remove folder
+    let folder_path = Path::new(BASE_DIR).join(name);
+    fs::remove_dir_all(&folder_path)?;
+    println!("Folder '{}' removed successfully", name);
+
+    // Remove table from SQLite database
+    let conn = Connection::open(DB_PATH)?;
+    conn.execute(&format!("DROP TABLE IF EXISTS {}", name), [])?;
+    println!("Table '{}' removed successfully from the database", name);
+
+    Ok(())
+}
+
+fn main() {
+    let args: Vec&lt;String> = std::env::args().collect();
+    if args.len() &lt; 3 {
+        println!("Usage: {} &lt;create|remove> &lt;category_name> [--force]", args[0]);
+        return;
+    }
+
+    let action = &args[1];
+    let category_name = &args[2];
+    let force = args.get(3).map_or(false, |arg| arg == "--force");
+
+    match action.as_str() {
+        "create" => {
+            if let Err(e) = create_category(category_name) {
+                eprintln!("Error creating category: {}", e);
+            }
+        },
+        "remove" => {
+            if let Err(e) = remove_category(category_name, force) {
+                eprintln!("Error removing category: {}", e);
+            }
+        },
+        _ => println!("Invalid action. Use 'create' or 'remove'."),
+    }
+}
+
+
+</code>
+</pre>
