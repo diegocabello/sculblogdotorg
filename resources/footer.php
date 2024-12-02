@@ -7,5 +7,5 @@
         }
     </style>
     <div style="background-color: #ece800; padding: 10px;">
-	<p style="text-align: center; margin: auto;">Created by Diego Cabello • <a href="/sculblog/">Home</a></p>
+	<p style="text-align: center; margin: auto;"><a href="/sculblog/">Home</a></p>
     </div>
